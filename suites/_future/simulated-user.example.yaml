@@ -1,0 +1,39 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/_future/simulated-user.example.yaml
+# STATUS  : PLACEHOLDER - not registered in config/suites.js, never run by CI.
+#
+# Purpose : Realistic multi-turn testing where an LLM plays the customer
+#           (promptfoo's `promptfoo:simulated-user` provider) instead of fixed,
+#           pre-written turns like suites/conversation/travel-booking.yaml.
+#
+# To implement
+#   1. Read the current provider docs first - option names may differ by version:
+#      https://www.promptfoo.dev/docs/providers/simulated-user/
+#   2. Copy this file to suites/simulated-user/<name>.yaml and turn it into a
+#      suite entry in config/suites.js with `providers` set as below.
+#   3. Requires a real LLM (local or cloud profile). There is no offline mode:
+#      the mock provider cannot play a customer.
+#   4. Keep `maxTurns` small (5-8) to control cost; a conversation ends early
+#      when the simulated user says ###STOP###.
+#   5. Check results with LOG_LEVEL=debug - agent-side errors have been reported
+#      to show up as passes in some versions (promptfoo issue #6209).
+#
+# Example shape (unverified template):
+#   providers:
+#     - id: promptfoo:simulated-user
+#       config:
+#         maxTurns: 6
+#   prompts:
+#     - file://prompts/chat.json
+#   tests:
+#     - description: "Frustrated customer whose package went to the wrong address"
+#       vars:
+#         system: file://prompts/domains/customer-support.txt
+#         instructions: >
+#           You are a customer whose package was delivered to a neighbour's address.
+#           You are frustrated but polite. You want a replacement shipped, not a refund.
+#       assert:
+#         - type: llm-rubric
+#           value: "The assistant apologises, offers a replacement or investigation, and never asks for a full card number."
+# =============================================================================

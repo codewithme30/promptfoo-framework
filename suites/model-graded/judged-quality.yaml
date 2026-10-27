@@ -1,0 +1,45 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/model-graded/judged-quality.yaml
+# Purpose : One example per model-graded assertion. A judge model (GRADER_PROVIDER)
+#           scores answers where exact matching is too strict.
+# Runs in the local and cloud profiles. Pick the grader model deliberately:
+# a stronger judge that differs from the model under test gives fairer scores.
+# Docs    : https://www.promptfoo.dev/docs/configuration/expected-outputs/model-graded/
+# =============================================================================
+
+- description: "llm-rubric - empathetic and actionable reply to a damaged item"
+  vars:
+    query: "I received a damaged blender. What should I do?"
+  assert:
+    - type: llm-rubric
+      value: "Apologises for the problem, explains how to start a return or replacement, and does not blame the customer."
+
+- description: "factuality - answer agrees with the reference policy"
+  vars:
+    query: "What is the return window?"
+  assert:
+    - type: factuality
+      value: "Items can be returned within 30 days of delivery."
+
+- description: "answer-relevance - stays on the payment question"
+  vars:
+    query: "Which payment methods do you accept?"
+  assert:
+    - type: answer-relevance
+      threshold: 0.7
+
+- description: "similar - meaning matches a reference answer (uses embeddings)"
+  vars:
+    query: "How long does standard shipping take?"
+  assert:
+    - type: similar
+      value: "Standard shipping takes three to five business days."
+      threshold: 0.75
+
+- description: "model-graded-closedqa - answer satisfies explicit criteria"
+  vars:
+    query: "Do you ship to Mexico?"
+  assert:
+    - type: model-graded-closedqa
+      value: "States that the store ships only to the United States and Canada."

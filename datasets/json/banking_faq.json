@@ -1,0 +1,26 @@
+[
+  {
+    "description": "JSON - debit versus credit card",
+    "vars": {
+      "system": "file://prompts/domains/banking.txt",
+      "query": "What is the difference between a debit card and a credit card?"
+    },
+    "assert": [{ "type": "icontains-all", "value": ["debit", "credit"] }]
+  },
+  {
+    "description": "JSON - domestic wire transfer timing",
+    "vars": {
+      "system": "file://prompts/domains/banking.txt",
+      "query": "How long does a domestic wire transfer usually take?"
+    },
+    "assert": [{ "type": "icontains-any", "value": ["same business day", "business day", "hours"] }]
+  },
+  {
+    "description": "JSON - lost debit card guidance",
+    "vars": {
+      "system": "file://prompts/domains/banking.txt",
+      "query": "What should I do if I lose my debit card?"
+    },
+    "assert": [{ "type": "icontains-any", "value": ["freeze", "block", "cancel", "report"] }]
+  }
+]

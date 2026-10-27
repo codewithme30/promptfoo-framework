@@ -1,0 +1,5 @@
+query,__description,__expected
+What is your return window?,CSV - return window,icontains: 30 days
+How long will standard shipping take?,CSV - shipping time,icontains: business days
+Can I buy a gift card for a friend?,CSV - gift card availability,icontains: gift card
+Do you ship internationally?,CSV - shipping destinations,icontains: Canada

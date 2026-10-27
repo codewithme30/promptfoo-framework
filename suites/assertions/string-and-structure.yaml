@@ -1,0 +1,116 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/assertions/string-and-structure.yaml
+# Purpose : One example per deterministic assertion concept. No grader model needed.
+# Domain  : Online retailer customer support (default system prompt).
+# Docs    : https://www.promptfoo.dev/docs/configuration/expected-outputs/deterministic/
+# =============================================================================
+
+- description: "equals - exact answer to a formatting instruction"
+  vars:
+    query: "Reply with only the word READY and nothing else."
+  assert:
+    - type: equals
+      value: READY
+
+- description: "icontains - policy fact is present (case-insensitive)"
+  vars:
+    query: "How many days do I have to return an item?"
+  assert:
+    - type: icontains
+      value: "30 days"
+
+- description: "icontains-any - any accepted wording of the shipping time"
+  vars:
+    query: "How long does standard shipping take?"
+  assert:
+    - type: icontains-any
+      value:
+        - "3-5 business days"
+        - "3 to 5 business days"
+
+- description: "icontains-all - every required point is mentioned"
+  vars:
+    query: "Briefly explain how to return a defective item, mentioning the return label and the refund."
+  assert:
+    - type: icontains-all
+      value:
+        - label
+        - refund
+
+- description: "starts-with - answer opens with the requested greeting"
+  vars:
+    query: "Start your reply with the word Hello, then ask for my order number."
+  assert:
+    - type: starts-with
+      value: Hello
+
+- description: "regex - order number follows the ORD-######## format"
+  vars:
+    query: "Show an example order number in the format ORD- followed by 8 digits."
+  assert:
+    - type: regex
+      value: 'ORD-\d{8}'
+
+- description: "not-icontains-any - answer never falls back to a canned AI disclaimer"
+  vars:
+    query: "Are gift cards refundable?"
+  assert:
+    - type: icontains
+      value: refundable
+    - type: not-icontains-any
+      value:
+        - "I don't know"
+        - "as an AI"
+
+- description: "word-count - short policy summary stays within a word range"
+  vars:
+    query: "Explain the return policy in no more than 40 words."
+  assert:
+    - type: word-count
+      value:
+        min: 5
+        max: 60
+
+- description: "is-json - structured ticket classification validates against a JSON schema"
+  vars:
+    query: "Return only a JSON object with the keys category and priority (low, medium or high) for this ticket: 'My package arrived damaged.'"
+  assert:
+    - type: is-json
+      value:
+        type: object
+        required: [category, priority]
+        properties:
+          category:
+            type: string
+          priority:
+            type: string
+            enum: [low, medium, high]
+
+- description: "javascript (inline) - custom length rule"
+  vars:
+    query: "Reply with a short greeting."
+  assert:
+    - type: javascript
+      value: "output.length > 0 && output.length < 200"
+
+- description: "not-is-json - plain-text answers must not be JSON"
+  vars:
+    query: "Say hello in plain text."
+  assert:
+    - type: not-is-json
+
+- description: "assert-set + metric + weight - answer passes when the weighted score reaches 0.5"
+  vars:
+    query: "How can I track my order?"
+  assert:
+    - type: assert-set
+      threshold: 0.5
+      assert:
+        - type: icontains-any
+          value: [track, order]
+          metric: relevance
+          weight: 2
+        - type: javascript
+          value: "output.length < 400"
+          metric: brevity

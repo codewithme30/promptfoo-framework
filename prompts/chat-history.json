@@ -1,0 +1,8 @@
+[
+  { "role": "system", "content": {{ system | dump }} },
+  {% for turn in _conversation %}
+  { "role": "user", "content": {{ turn.input | dump }} },
+  { "role": "assistant", "content": {{ turn.output | dump }} },
+  {% endfor %}
+  { "role": "user", "content": {{ query | dump }} }
+]

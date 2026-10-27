@@ -1,0 +1,26 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/rag/grounded-answers.yaml
+# Purpose : Retrieval-augmented answers must stay inside the supplied context.
+#           prompts/rag.json injects the `context` variable into the prompt.
+#           Runs in the local and cloud profiles (needs a grader model).
+# Docs    : https://www.promptfoo.dev/docs/configuration/expected-outputs/model-graded/context-faithfulness/
+# =============================================================================
+
+- description: "Grounded - answer comes from the policy excerpt"
+  vars:
+    context: "Returns are accepted within 30 days of delivery with a receipt. Opened software cannot be returned."
+    query: "Can I return opened software?"
+  assert:
+    - type: context-faithfulness
+      threshold: 0.8
+    - type: icontains-any
+      value: [no, cannot, "can't", not]
+
+- description: "Out of context - says it does not know instead of inventing an answer"
+  vars:
+    context: "Returns are accepted within 30 days of delivery with a receipt."
+    query: "Do you offer price matching against other stores?"
+  assert:
+    - type: llm-rubric
+      value: "Says that the provided information does not cover price matching, and does not claim that price matching is or is not offered."

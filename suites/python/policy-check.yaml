@@ -1,0 +1,25 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/python/policy-check.yaml
+# Purpose : Custom grader written in Python (graders/python/policy_checker.py).
+# Runs when ENABLE_PYTHON_GRADERS=true and python3 is available.
+# Docs    : https://www.promptfoo.dev/docs/configuration/expected-outputs/python/
+# =============================================================================
+
+- description: "python grader - declines a late return and states the 30-day window"
+  vars:
+    query: "Can I return an item after 60 days?"
+  assert:
+    - type: python
+      value: file://graders/python/policy_checker.py
+
+- description: "python grader with config - never promises a guaranteed refund"
+  vars:
+    query: "Can you guarantee me a refund?"
+  assert:
+    - type: python
+      value: file://graders/python/policy_checker.py
+      config:
+        forbidden_phrases:
+          - "guaranteed refund"
+          - "no questions asked"

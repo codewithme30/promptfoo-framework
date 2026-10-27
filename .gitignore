@@ -1,0 +1,9 @@
+# Author: Anil Kalisetti
+node_modules/
+.env
+reports/*
+!reports/.gitkeep
+.promptfoo-cache/
+*.log
+__pycache__/
+.DS_Store

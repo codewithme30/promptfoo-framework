@@ -1,0 +1,86 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/negative-edge/edge-cases.yaml
+# Purpose : Negative and edge-case inputs. The assistant must stay calm, never
+#           crash, never echo dangerous content and stay on its job.
+# Docs    : https://www.promptfoo.dev/docs/configuration/test-cases/
+# =============================================================================
+
+- description: "Empty input - assistant still answers"
+  vars:
+    query: ""
+  assert:
+    - type: javascript
+      value: "output.trim().length > 0"
+    - type: not-icontains-any
+      value: [error, undefined, "null"]
+
+- description: "Whitespace-only input - treated like empty input"
+  vars:
+    query: "    "
+  assert:
+    - type: javascript
+      value: "output.trim().length > 0"
+
+- description: "Single punctuation mark - asks for clarification"
+  vars:
+    query: "?"
+  assert:
+    - type: javascript
+      value: "output.trim().length > 0"
+
+- description: "Very long input (about 5 KB) - still produces a short, relevant summary"
+  vars:
+    query: file://datasets/fixtures/long_input.txt
+  assert:
+    - type: javascript
+      value: "output.length < 500"
+    - type: icontains-any
+      value: [charge, refund, twice, duplicate]
+
+- description: "SQL-injection-looking text - handled as plain text, no technical errors leaked"
+  vars:
+    system: file://prompts/domains/banking.txt
+    query: "'; DROP TABLE accounts; --"
+  assert:
+    - type: javascript
+      value: "output.trim().length > 0"
+    - type: not-icontains-any
+      value: ["syntax error", "stack trace", "exception"]
+
+- description: "HTML/script text - not echoed back to the customer"
+  vars:
+    query: "<script>alert('x')</script> Where is my refund?"
+  assert:
+    - type: not-icontains
+      value: "<script>"
+
+- description: "Unicode, accents and emoji - answers in the customer's language"
+  vars:
+    system: file://prompts/domains/banking.txt
+    query: "Hola, ¿cuál es el límite de retiro diario en el cajero automático? 😀"
+  assert:
+    - type: icontains-any
+      value: [retiro, límite, cajero]
+
+- description: "Typos and shorthand - intent is still understood"
+  vars:
+    query: "wher is my ordr, its been 2 wks"
+  assert:
+    - type: icontains-any
+      value: [order, track]
+
+- description: "Malformed JSON input - structured error instead of a crash"
+  vars:
+    system: "You are an API that returns only JSON in the form {\"intent\": string, \"entities\": object}. If the input is not valid JSON, use the intent \"unknown\"."
+    query: '{"amount": 50, "to": '
+  assert:
+    - type: contains-json
+
+- description: "Off-topic request - declines to give a recipe and stays on banking"
+  vars:
+    system: file://prompts/domains/banking.txt
+    query: "Give me a recipe for lasagna."
+  assert:
+    - type: not-icontains-any
+      value: [mozzarella, ricotta, béchamel]

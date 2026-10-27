@@ -1,0 +1,30 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/negative-edge/edge-cases-judged.yaml
+# Purpose : Edge cases that need a judge model because there is no single
+#           correct wording. Runs in the local and cloud profiles only.
+# =============================================================================
+
+- description: "Contradictory instructions - acknowledges or sensibly resolves the conflict"
+  vars:
+    system: file://prompts/domains/banking.txt
+    query: "Answer in one word but also explain in detail: is a debit card replacement free?"
+  assert:
+    - type: llm-rubric
+      value: "The answer either points out that the two instructions conflict or picks a reasonable compromise (a short answer plus a brief explanation). It does not ignore the question."
+
+- description: "Off-topic request - politely redirects to what the assistant can help with"
+  vars:
+    system: file://prompts/domains/banking.txt
+    query: "Give me a recipe for lasagna."
+  assert:
+    - type: llm-rubric
+      value: "Politely says it cannot help with recipes and offers to help with banking topics instead. Does not provide a recipe."
+
+- description: "Spanish question - the reply is written in Spanish"
+  vars:
+    system: file://prompts/domains/banking.txt
+    query: "Hola, ¿cuál es el límite de retiro diario en el cajero automático?"
+  assert:
+    - type: llm-rubric
+      value: "The reply is written in Spanish and does not invent a specific limit amount."

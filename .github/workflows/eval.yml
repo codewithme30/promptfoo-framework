@@ -1,0 +1,78 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : .github/workflows/eval.yml
+# Purpose : Two evaluation jobs.
+#   offline : runs on every push and pull request. Needs no secrets, so it is
+#             safe for forks. Python graders are enabled to cover both languages.
+#   cloud   : runs on demand and nightly. Needs repository secrets / variables.
+# Both jobs fail when a suite is below its pass-rate threshold (config/suites.js).
+# =============================================================================
+name: LLM evaluations
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *" # nightly, 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    env:
+      PROFILE: offline
+      ENABLE_PYTHON_GRADERS: "true"
+      PROMPTFOO_DISABLE_TELEMETRY: "1"
+      PROMPTFOO_DISABLE_UPDATE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # TODO: commit package-lock.json after the first `npm install`, then switch to `npm ci` and add `cache: npm`.
+      - run: npm install
+      - run: npm test # validates static files, then runs the offline profile
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-reports
+          path: reports/
+
+  cloud:
+    # Never runs for pull requests, so secrets cannot be exposed to forks.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      PROFILE: cloud
+      TARGET_PROVIDER: ${{ vars.TARGET_PROVIDER }}
+      GRADER_PROVIDER: ${{ vars.GRADER_PROVIDER }}
+      EMBEDDING_PROVIDER: ${{ vars.EMBEDDING_PROVIDER }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      PROMPTFOO_CACHE_PATH: .promptfoo-cache
+      PROMPTFOO_DISABLE_TELEMETRY: "1"
+      PROMPTFOO_DISABLE_UPDATE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/cache@v4
+        with:
+          path: .promptfoo-cache
+          key: promptfoo-${{ hashFiles('prompts/**', 'datasets/**', 'suites/**') }}
+      # TODO: commit package-lock.json after the first `npm install`, then switch to `npm ci` and add `cache: npm`.
+      - run: npm install
+      - run: npm run eval:cloud
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cloud-reports
+          path: reports/

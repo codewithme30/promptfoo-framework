@@ -1,0 +1,25 @@
+{
+  "name": "promptfoo-framework",
+  "version": "0.1.0",
+  "description": "Configurable promptfoo framework for evaluating LLM prompts, models and applications (evaluations only).",
+  "author": "Anil Kalisetti",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "pretest": "node scripts/validate-static.js",
+    "test": "node scripts/run-suites.js --profile offline",
+    "eval": "node scripts/run-suites.js",
+    "eval:offline": "node scripts/run-suites.js --profile offline",
+    "eval:local": "node scripts/run-suites.js --profile local",
+    "eval:cloud": "node scripts/run-suites.js --profile cloud",
+    "validate": "node scripts/validate-static.js",
+    "view": "promptfoo view"
+  },
+  "devDependencies": {
+    "js-yaml": "4.1.0",
+    "promptfoo": "0.125.1"
+  }
+}

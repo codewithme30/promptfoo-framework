@@ -1,0 +1,19 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/performance/latency-and-cost.yaml
+# Purpose : Service-level checks - response time and spend per call.
+# Runs in the offline and cloud profiles (local Ollama models report no cost).
+# Tune thresholds to your own SLA; the values below are starting points.
+# Docs    : https://www.promptfoo.dev/docs/configuration/expected-outputs/deterministic/#latency
+# =============================================================================
+
+- description: "latency + cost - simple FAQ answer is fast and cheap"
+  vars:
+    query: "What are your support hours?"
+  assert:
+    - type: latency
+      threshold: 5000 # milliseconds
+    - type: cost
+      threshold: 0.01 # US dollars per call
+    - type: icontains
+      value: "8am"

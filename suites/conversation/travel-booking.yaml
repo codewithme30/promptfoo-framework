@@ -1,0 +1,51 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/conversation/travel-booking.yaml
+# Purpose : Multi-turn memory. prompts/chat-history.json replays earlier turns
+#           through the `_conversation` variable. Tests that share a
+#           `conversationId` form one conversation; a different id starts fresh.
+#
+# IMPORTANT
+#   - Turns must stay in order and run one at a time (serial: true in config/suites.js).
+#   - The last test uses a new conversationId on purpose: it proves one
+#     customer's details never leak into another customer's conversation.
+# Docs    : https://www.promptfoo.dev/docs/configuration/chat/
+# =============================================================================
+
+- description: "Booking / turn 1 - customer gives route and date"
+  vars:
+    query: "I want to fly from Chicago to Denver next Friday."
+  metadata:
+    conversationId: booking-1
+  assert:
+    - type: icontains-all
+      value: [Chicago, Denver]
+
+- description: "Booking / turn 2 - assistant remembers the route without being told again"
+  vars:
+    query: "Make it a morning flight, and what's the checked-bag fee?"
+  metadata:
+    conversationId: booking-1
+  assert:
+    - type: icontains-any
+      value: [Chicago, Denver]
+    - type: not-icontains
+      value: "which route"
+
+- description: "Booking / turn 3 - customer changes one detail, the rest is kept"
+  vars:
+    query: "Actually, change the destination to Phoenix."
+  metadata:
+    conversationId: booking-1
+  assert:
+    - type: icontains-all
+      value: [Chicago, Phoenix]
+
+- description: "Isolation - a new conversation does not see the earlier booking"
+  vars:
+    query: "What's the checked-bag fee?"
+  metadata:
+    conversationId: booking-2
+  assert:
+    - type: not-icontains-any
+      value: [Chicago, Denver, Phoenix]

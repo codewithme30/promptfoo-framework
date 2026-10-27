@@ -1,0 +1,22 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : datasets/yaml/healthcare_faq.yaml
+# Purpose : Test data in YAML - general health information questions.
+# Note    : Answers must stay general and point to a doctor or pharmacist.
+# =============================================================================
+
+- description: "YAML - flu shot frequency"
+  vars:
+    system: file://prompts/domains/healthcare.txt
+    query: "How often should an adult get a flu shot?"
+  assert:
+    - type: icontains-any
+      value: ["every year", "annually", "once a year", "each year"]
+
+- description: "YAML - cold versus flu"
+  vars:
+    system: file://prompts/domains/healthcare.txt
+    query: "What is the difference between a cold and the flu?"
+  assert:
+    - type: icontains
+      value: fever

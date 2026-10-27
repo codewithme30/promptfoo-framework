@@ -1,0 +1,2 @@
+{"description": "JSONL - carry-on size limit", "vars": {"system": "file://prompts/domains/travel.txt", "query": "What is the carry-on size limit?"}, "assert": [{"type": "icontains", "value": "22"}]}
+{"description": "JSONL - changing a booked flight", "vars": {"system": "file://prompts/domains/travel.txt", "query": "Can I change my flight after booking?"}, "assert": [{"type": "icontains-any", "value": ["change", "fare difference"]}]}

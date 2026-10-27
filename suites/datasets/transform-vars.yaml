@@ -1,0 +1,17 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/datasets/transform-vars.yaml
+# Purpose : transformVars - compute variables before the prompt is rendered.
+#           A raw numeric order id becomes the padded order number a real
+#           order system uses, and the customer question is built from it.
+# Docs    : https://www.promptfoo.dev/docs/configuration/guide/#transforming-variables
+# =============================================================================
+
+- description: "transformVars - order number is derived from order_id"
+  vars:
+    order_id: 1234
+  options:
+    transformVars: file://transforms/add-order-number.js
+  assert:
+    - type: icontains
+      value: "ORD-00001234"

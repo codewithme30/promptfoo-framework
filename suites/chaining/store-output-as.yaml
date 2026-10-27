@@ -1,0 +1,75 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/chaining/store-output-as.yaml
+# Purpose : Dependent tests. The output of one prompt is stored with
+#           `storeOutputAs` and used as an input variable of the next prompt,
+#           so context is carried from step to step.
+#
+# IMPORTANT
+#   - Tests in a chain run in file order and must run one at a time. The suite
+#     is registered with `serial: true` in config/suites.js.
+#   - Keep each chain's tests together and in order. A step that fails leaves
+#     the next step with an empty variable, so fix the first failure first.
+#   - `transform` is set per test (it replaces the default transform) so the
+#     stored value is clean, e.g. only the first line of the answer.
+# Docs    : https://www.promptfoo.dev/docs/configuration/guide/#chaining-tests
+# =============================================================================
+
+# ----------------------------------------------------------------------------
+# Chain A - IT helpdesk ticket: classify -> troubleshoot -> summarise
+# ----------------------------------------------------------------------------
+- description: "Chain A / step 1 - classify the ticket"
+  vars:
+    system: file://prompts/domains/it-helpdesk.txt
+    query: "Classify this ticket into exactly one category from: Email, VPN, Hardware, Access. Ticket: \"My Outlook keeps asking for my password after the Windows update.\" Reply with only the category name."
+  options:
+    storeOutputAs: category
+    transform: file://transforms/first-line.js
+  assert:
+    - type: icontains-any
+      value: [Email, Access]
+
+- description: "Chain A / step 2 - troubleshooting uses the stored category"
+  vars:
+    system: file://prompts/domains/it-helpdesk.txt
+    query: "List three short troubleshooting steps for a '{{category}}' issue. Mention the category name in the first step."
+  options:
+    storeOutputAs: steps
+  assert:
+    - type: icontains-any
+      value: [credential, cache, profile]
+    # Proves the context was carried: the answer must mention the category from step 1.
+    - type: javascript
+      value: "output.toLowerCase().includes(String(context.vars.category).toLowerCase())"
+
+- description: "Chain A / step 3 - one-line ticket summary built from the steps"
+  vars:
+    system: file://prompts/domains/it-helpdesk.txt
+    query: "Write a one-line ticket summary based on these steps:\n{{steps}}"
+  assert:
+    - type: javascript
+      value: 'output.split("\n").length === 1 && output.length < 300'
+
+# ----------------------------------------------------------------------------
+# Chain B - Patient portal message: identify symptom -> general self-care advice
+# ----------------------------------------------------------------------------
+- description: "Chain B / step 1 - name the main symptom"
+  vars:
+    system: file://prompts/domains/healthcare.txt
+    query: "Patient message: \"I get a pounding headache most afternoons.\" Name the main symptom in one or two words."
+  options:
+    storeOutputAs: symptom
+    transform: file://transforms/first-line.js
+  assert:
+    - type: icontains
+      value: headache
+
+- description: "Chain B / step 2 - advice refers to the stored symptom and points to a clinician"
+  vars:
+    system: file://prompts/domains/healthcare.txt
+    query: "Give two general self-care tips for {{symptom}} and one sign that means the patient should see a doctor."
+  assert:
+    - type: icontains-any
+      value: [doctor, clinician, healthcare provider]
+    - type: javascript
+      value: "output.toLowerCase().includes(String(context.vars.symptom).toLowerCase())"

@@ -1,0 +1,36 @@
+# =============================================================================
+# Author  : Anil Kalisetti
+# File    : suites/_future/http-target.example.yaml
+# STATUS  : PLACEHOLDER - not registered in config/suites.js, never run by CI.
+#
+# Purpose : Evaluate an EXISTING chatbot or RAG service over HTTP instead of a
+#           raw model. The same assertion suites then test your real application.
+#
+# To implement
+#   1. Add `CHATBOT_URL` and `CHATBOT_API_KEY` to .env.example and read them in
+#      config/profiles.js (keep config/profiles.js the only reader of the env).
+#   2. Add a profile (e.g. `app`) in config/profiles.js whose `target` is an
+#      object provider instead of a string, and let config/build-config.js pass
+#      it through to `providers`.
+#   3. Map the response in `transformResponse` so assertions see plain text.
+#      If the service returns guardrail results, also map them to a
+#      `guardrails` field so the `guardrails` assertion works
+#      (https://www.promptfoo.dev/docs/configuration/expected-outputs/guardrails/).
+#   4. For multi-turn services that keep server-side sessions, send a stable
+#      session id per conversation and run the suite serially.
+#   5. Never commit real endpoints or keys; use .env only.
+#   6. Docs: https://www.promptfoo.dev/docs/providers/http/
+#
+# Example shape (unverified template):
+#   providers:
+#     - id: https
+#       config:
+#         url: "{{ env.CHATBOT_URL }}"
+#         method: POST
+#         headers:
+#           Content-Type: application/json
+#           Authorization: "Bearer {{ env.CHATBOT_API_KEY }}"
+#         body:
+#           message: "{{ query }}"
+#         transformResponse: "json.reply"
+# =============================================================================

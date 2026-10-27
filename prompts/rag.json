@@ -1,0 +1,7 @@
+[
+  {
+    "role": "system",
+    "content": "Answer using only the context below. If the answer is not in the context, say that you do not know.\n\nContext:\n{{ context }}"
+  },
+  { "role": "user", "content": {{ query | dump }} }
+]
